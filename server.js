@@ -1,6 +1,7 @@
 var express = require('express');
 var morgan = require('morgan');
 var mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 var bodyParser = require('body-parser');
 var ejs = require('ejs');
 var engine = require('ejs-mate');
