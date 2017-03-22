@@ -78,5 +78,24 @@ router.get('/product/:id', function(req, res, next){
   });
 });
 
+router.post('/product/:product_id', function (req, res, next)
+{
+  Product.findOne( { owner: req.user._id}, function(err, cart){
+    cart.items.push({
+      item: req.body.product_id,
+      price: parseFloat(req.body.priceValue),
+      quantity: parseInt(req.body.quantity)
+    });
+
+    cart.total = (cart.total + parseFloat(req.body.priceValue)).toFiexed(2);
+
+    cart.save(function(err) {
+      if (err) return next(err);
+      return res.redirect('/cart');
+    });
+
+  });
+});
+
 
 module.exports = router;
