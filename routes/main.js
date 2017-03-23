@@ -1,6 +1,7 @@
 var router = require('express').Router();
 var user = require('../models/user');
 var Product = require('../models/products');
+var Cart = require('../models/cart');
 
 function paginate(req, res, next){
   var perPage = 9;
@@ -80,7 +81,7 @@ router.get('/product/:id', function(req, res, next){
 
 router.post('/product/:product_id', function (req, res, next)
 {
-  Product.findOne( { owner: req.user._id}, function(err, cart){
+  Cart.findOne( { owner: req.user._id}, function(err, cart){
     cart.items.push({
       item: req.body.product_id,
       price: parseFloat(req.body.priceValue),
@@ -94,6 +95,32 @@ router.post('/product/:product_id', function (req, res, next)
       return res.redirect('/cart');
     });
 
+  });
+});
+
+router.get('/cart', function (req, res, next){
+  Cart
+    .findOne({ owner : req.user._id})
+    .populate('items.item')
+    .exec(function(err, cart){
+      if (err) return next(err);
+      res.redirect('main/cart',{
+        cart: cart
+      });
+    });
+});
+
+router.post('/remove', function (req, res, next){
+  Cart.findOne({owner: req.user._id}, function (err, cart){
+    cart.items.pull(String(req.body.item));
+
+    cart.total = (cart.total - parseFloat(req.body.price).toFixed(2));
+    cart.save(function(err, found){
+      if (err) return next(err);
+
+      req.flash('remove', 'Success removed item');
+      res.redirect('/cart');
+    });
   });
 });
 
